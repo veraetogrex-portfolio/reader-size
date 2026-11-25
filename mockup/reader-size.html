@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>T41 Reader Size — larger text, the marked line stays in place</title>
+<link rel="stylesheet" href="_shared/nocturne.css">
+<link rel="stylesheet" href="../style.css">
+<style>
+  /* the whole app screen from ../, in Nocturne type; no grid on the app screen */
+  #stage{background:#07080C}
+  #stage .rb{position:absolute;left:0;top:0;--font:var(--f-text)}
+  body.autoplay #stage :focus-visible{outline:none}
+  body.autoplay #li-cursor{transition:none}   /* visible from frame one, no fade at the loop seam */
+  #li-cursor svg{transform:scale(1.5);transform-origin:4px 3px}   /* the hand stays readable in a phone-sized reel */
+  #li-cursor.down svg{transform:scale(1.3)}
+</style>
+</head>
+<body>
+<div id="stage" data-title="T41 Reader Size" data-url="veraetogrex-portfolio.github.io/reader-size">
+  <section class="rb" aria-label="VECTOR Books" data-assets="../assets/"></section>
+</div>
+<script src="_shared/stage.js"></script>
+<script src="../script.js"></script>
+<script>
+const app = document.querySelector('.rb').readerApp;
+const at = sel => { const r = Stage.rect(document.querySelector(sel)); return [r.cx, r.cy]; };
+const REST = [1010, 640];
+// one act: home → the reader at 18 px → Display → A+ 22 px → A+ 26 px; the marked line and its ribbon keep their height
+Stage.init({
+  reset: () => app.reset(),
+  cursorStart: REST,
+  async demo(s) {
+    const t0 = performance.now();
+    await s.until(t0, 1000);                          // the whole home screen at rest first
+    const [cx, cy] = at('[data-continue]');
+    await s.move([cx + 22, cy + 6], 600);             // Continue on "The Quiet Harbour", the hand on the right half of the button
+    await s.until(t0, 1750);
+    await s.click(null, { hold: 110 });               // → the reader, chapter 7 at 18 px, the marked line on its ribbon
+    await s.until(t0, 2650);
+    const [ax, ay] = at('[data-aa]');
+    await s.move([ax + 4, ay + 6], 550);              // Aa in the page toolbar
+    await s.until(t0, 3300);
+    await s.click(null, { hold: 110 });               // Display slides in where Bookmarks were
+    await s.until(t0, 3950);
+    const [px, py] = at('.rb-step[data-step="1"]');
+    await s.move([px + 15, py - 16], 600);            // A+, upper-right corner: the hand stays off the "A+" glyph and "≈ 10 words a line"
+    await s.until(t0, 4800);
+    await s.click(null, { hold: 120 });               // 18 → 22 px: the lines wrap again, the marked line keeps its height
+    await s.until(t0, 6400);
+    await s.click(null, { hold: 120 });               // 22 → 26 px: 811 pages, the marked line still at the same height
+    await s.until(t0, 10100);                         // the camera moves in on the page, holds the result 1.5 s, pulls back to the whole screen and stops
+  },
+});
+</script>
+</body>
+</html>
